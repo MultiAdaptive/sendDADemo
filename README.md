@@ -1,11 +1,36 @@
 # Send DA Demo
 
-## Flow
 
-1. Pass in the SRS file path to initialize the MultiAdaptiveSdk.
-2. Use the SDK's GenerateDataCommitAndProof method with the DA data to generate commitments and proof.
-3. Send the DA data, commitments, proof, and other information to the broadcast node to request a signature.
-4. Send the obtained signature, commitments, and other information to the contract.
+# Prerequisites
+
+- View all broadcasting nodes  
+    ```shell
+      go test -run TestGetBroadcastingNodes
+    ```
+- View all storage nodes  
+    ```shell
+      go test -run TestGetStorageNodes
+    ```
+- Register nodeGroup  
+
+  Register the broadcasting node group and set the minimum number of signatures required. Their signatures will be needed when uploading commitments.
+    ```shell
+      go test -run TestCreateNodeGroup
+    ```
+- Register nameSpace   
+
+  This step is optional. If long-term storage is needed, specify the storage nodes and complete the registration.  
+  ```shell
+    go test -run TestCreateNameSpace
+  ```
+
+## Flow
+1. Select your desired broadcasting nodes to register a nodeGroup and set the required minimum number of signatures.
+2. If long-term storage is needed, you also need to register a nameSpace to specify the long-term storage nodes.
+3. Pass in the SRS file path to initialize the kzg-sdk.
+4. Use the SDK's GenerateDataCommitAndProof method with the DA data to generate commitments and proof.
+5. Send the DA data, commitments, proof, and other information to the broadcast node to request a signature.
+6. Send the obtained signature, commitments, and other information to the contract.(If long-term storage is not needed, please set `nameSpaceId` to 0.)
 
 ## Terminology
 
