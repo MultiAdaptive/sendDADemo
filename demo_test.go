@@ -8,7 +8,7 @@ import (
 
 func TestSendDADemo(t *testing.T) {
 	const nodeGroupKeyStr = "41FCD5661160DF12F1DE283A786389D769BEF07DB59292C92663C9D6E994F99F"
-	const nameSpaceId = 1
+	const nameSpaceId = 0
 	sendDADemo(nodeGroupKeyStr, nameSpaceId)
 
 }
