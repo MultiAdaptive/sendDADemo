@@ -19,11 +19,16 @@ import (
 
 const dataSize = 5 * 1024 * 1024
 const privateKey = "e5eae5cc49dade024474874c4a05a93b6c2e1c97cb35bdcb88971d551b200f33"
-const cmManagerAddress = "0x9b96A7F97eff734B761bFD9fEBe9928a43E8EeF8"
-const NodeManagerAddress = "0x2B2aa5FAe80433D02619Cfe20348d47DD8E653d5"
-const StorageManagerAddress = "0x8B3Fd50373219Ff1708a2aB34E77937273463376"
+const cmManagerAddress = "0xd7cC67a93843fCCf90Baa05fe80c71dd66722f3f"
+const NodeManagerAddress = "0xAb89CE3AeDE6EdC5167afE7220E9067e048cE1B1"
+const StorageManagerAddress = "0x1fb64EA0E454E5E2359084eBf9e06c8684A91f2A"
 const chainID = 11155111
 const ethUrl = "https://eth-sepolia.public.blastapi.io"
+
+type RPCSignResult struct {
+	SigData   []byte `json:"SigData"`
+	TimeStamp int64  `json:"TimeStamp"`
+}
 
 func main() {
 
@@ -56,35 +61,36 @@ func sendDADemo(nodeGroupKeyStr string, nameSpaceId int64) {
 		return
 	}
 
-	signatures, err := GetSignature(nodeGroupKey, sender, index, length, cm.Marshal(), data, proof.H.Marshal(), proof.ClaimedValue.Marshal())
+	signatures, timeout, err := GetSignature(nodeGroupKey, sender, index, length, cm.Marshal(), data, proof.H.Marshal(), proof.ClaimedValue.Marshal())
 	if err != nil {
 		println("GetSignature Error", err)
 		return
 	}
 
-	SendCommitToL1(length, nodeGroupKey, signatures, cm, nameSpaceId)
+	SendCommitToL1(length, nodeGroupKey, signatures, cm, nameSpaceId, timeout)
 }
 
-func GetSignature(nodeGroupKey common.Hash, sender common.Address, index, length uint64, commitment, data []byte, proof []byte, claimedValue []byte) ([][]byte, error) {
+func GetSignature(nodeGroupKey common.Hash, sender common.Address, index, length uint64, commitment, data []byte, proof []byte, claimedValue []byte) ([][]byte, int64, error) {
+	timeout := int64(0)
 	client, err := ethclient.Dial(ethUrl)
 	if err != nil {
-		return nil, err
+		return nil, timeout, err
 	}
 	storageManagerAddress := common.HexToAddress(StorageManagerAddress)
 	storageManager, err := NewStorageManager(storageManagerAddress, client)
 	if err != nil {
-		return nil, err
+		return nil, timeout, err
 	}
 
 	nodeManagerAddress := common.HexToAddress(NodeManagerAddress)
 	nodeManager, err := NewNodeManager(nodeManagerAddress, client)
 	if err != nil {
-		return nil, err
+		return nil, timeout, err
 	}
 
 	nodeGroup, err := storageManager.NODEGROUP(nil, nodeGroupKey)
 	if err != nil {
-		return nil, err
+		return nil, timeout, err
 	}
 	var re [][]byte
 	for _, add := range nodeGroup.Addrs {
@@ -99,15 +105,10 @@ func GetSignature(nodeGroupKey common.Hash, sender common.Address, index, length
 			re = append(re, nil)
 			continue
 		}
-		re = append(re, sign)
+		re = append(re, sign.SigData)
+		timeout = sign.TimeStamp
 	}
-	for _, bytes := range re {
-		log.Println(common.Bytes2Hex(bytes))
-	}
-	for i, addr := range nodeGroup.Addrs {
-		log.Println(i, addr)
-	}
-	return re, nil
+	return re, timeout, nil
 }
 
 func simulatedData() []byte {
@@ -134,18 +135,18 @@ func getIndex(sender common.Address) (uint64, error) {
 	return index.Uint64(), nil
 }
 
-func signature(url string, sender common.Address, index, length uint64, commitment, data []byte, nodeGroupKey [32]byte, proof []byte, claimedValue []byte) ([]byte, error) {
+func signature(url string, sender common.Address, index, length uint64, commitment, data []byte, nodeGroupKey [32]byte, proof []byte, claimedValue []byte) (*RPCSignResult, error) {
 	client, err := ethclient.Dial(url)
 	if err != nil {
 		return nil, err
 	}
 	ctx := context.Background()
-	var result []byte
+	var result RPCSignResult
 	err = client.Client().CallContext(ctx, &result, "eth_sendDAByParams", sender, index, length, commitment, data, nodeGroupKey, proof, claimedValue)
-	return result, err
+	return &result, err
 }
 
-func SendCommitToL1(length uint64, dasKey [32]byte, sign [][]byte, commit kzg.Digest, nameSpaceId int64) {
+func SendCommitToL1(length uint64, dasKey [32]byte, sign [][]byte, commit kzg.Digest, nameSpaceId int64, timeout int64) {
 	client, err := ethclient.Dial(ethUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -167,7 +168,7 @@ func SendCommitToL1(length uint64, dasKey [32]byte, sign [][]byte, commit kzg.Di
 		X: new(big.Int).SetBytes(commit.X.Marshal()),
 		Y: new(big.Int).SetBytes(commit.Y.Marshal()),
 	}
-	tx, err := instance.SubmitCommitment(auth, big.NewInt(int64(length)), dasKey, sign, big.NewInt(nameSpaceId), commitData)
+	tx, err := instance.SubmitCommitment(auth, big.NewInt(int64(length)), big.NewInt(timeout), big.NewInt(nameSpaceId), dasKey, sign, commitData)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -224,7 +225,7 @@ func GetStorageNodes() ([]NodeManagerNodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeList, err := instance.GetstorageNodes(nil)
+	nodeList, err := instance.GetBroadcastingNodes(nil)
 	if err != nil {
 		return nil, err
 
