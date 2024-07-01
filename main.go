@@ -225,7 +225,7 @@ func GetStorageNodes() ([]NodeManagerNodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeList, err := instance.GetBroadcastingNodes(nil)
+	nodeList, err := instance.GetStorageNodes(nil)
 	if err != nil {
 		return nil, err
 
