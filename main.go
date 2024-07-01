@@ -212,7 +212,14 @@ func GetBroadcastingNodes() ([]NodeManagerNodeInfo, error) {
 		return nil, err
 
 	}
-	return nodeList, nil
+	var filtered []NodeManagerNodeInfo
+	for _, info := range nodeList {
+		if info.StakedTokens.Cmp(big.NewInt(0)) == 0 {
+			continue
+		}
+		filtered = append(filtered, info)
+	}
+	return filtered, nil
 }
 
 func GetStorageNodes() ([]NodeManagerNodeInfo, error) {
@@ -230,7 +237,14 @@ func GetStorageNodes() ([]NodeManagerNodeInfo, error) {
 		return nil, err
 
 	}
-	return nodeList, nil
+	var filtered []NodeManagerNodeInfo
+	for _, info := range nodeList {
+		if info.StakedTokens.Cmp(big.NewInt(0)) == 0 {
+			continue
+		}
+		filtered = append(filtered, info)
+	}
+	return filtered, nil
 }
 
 func CreateNodeGroup(requiredAmountOfSignatures int64, addrs []common.Address) common.Hash {
