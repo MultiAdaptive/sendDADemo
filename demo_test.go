@@ -7,9 +7,9 @@ import (
 )
 
 func TestSendDADemo(t *testing.T) {
-	const nodeGroupKeyStr = "41FCD5661160DF12F1DE283A786389D769BEF07DB59292C92663C9D6E994F99F"
-	const nameSpaceId = 0
-	sendDADemo(nodeGroupKeyStr, nameSpaceId)
+	const nodeGroupKeyStr = "3EECEBDA050E56E94CB9A62ED9058FF040E36F923049B133D97AD80539D03AF3"
+	nameSpaceKey := common.HexToHash("0x00")
+	sendDADemo(nodeGroupKeyStr, nameSpaceKey)
 
 }
 
@@ -43,8 +43,8 @@ func TestCreateNodeGroup(t *testing.T) {
 func TestCreateNameSpace(t *testing.T) {
 	var addrs []common.Address
 	addrs = append(addrs, common.HexToAddress("0x321940E1D175E30Aa73FA9448Fa1cA9033a2e3a7"), common.HexToAddress("0x18422BFB8eFA5Fd160005A5F65c401cB35344fA3"))
-	id := CreateNameSpace(addrs)
-	if id != 0 {
-		log.Printf("nameSpaceId: %d", id)
+	key := CreateNameSpace(addrs)
+	if common.HexToHash("0x00").Cmp(key) != 0 {
+		log.Printf("nameSpaceId: %d", key)
 	}
 }
