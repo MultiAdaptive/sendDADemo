@@ -45,15 +45,15 @@
 
 ## Contract
 
-- **CommitmentManager** [0x9b96...EeF8](https://sepolia.etherscan.io/address/0x9b96A7F97eff734B761bFD9fEBe9928a43E8EeF8)
+- **CommitmentManager** [0xa8ED...A724](https://sepolia.etherscan.io/address/0xa8ED91Eb2B65A681A742011798d7FB31C50FA724)
     - Key Functions:
         - `SubmitCommitment()`: Submit commitment and signature information.
         - `indices()`: Get the current user's commitment index.
-- **NodeManager** [0x2B2a...53d5](https://sepolia.etherscan.io/address/0x2B2aa5FAe80433D02619Cfe20348d47DD8E653d5)
+- **NodeManager** [0x97bE...67EC](https://sepolia.etherscan.io/address/0x97bE3172AEA87b60224e8d604aC4bAbe55F067EC)
     - Key Functions:
         - `RegisterBroadcastNode`: Stake tokens to become a broadcast node.
         - `RegisterStorageNode`: Stake tokens to become a storage node.
-- **StorageManager** [0x8B3F...3376](https://sepolia.etherscan.io/address/0x8B3Fd50373219Ff1708a2aB34E77937273463376)
+- **StorageManager** [0x6642...30fe](https://sepolia.etherscan.io/address/0x664250Fb3b1cd58f07683D957A34daf8A06130fe)
     - Key Functions:
         - `CreateNameSpace`: Create a group of storage nodes for long-term data storage.
         - `StoreAddressMapping`: Create a group of broadcast nodes for signing, and set the required minimum number of signatures.
